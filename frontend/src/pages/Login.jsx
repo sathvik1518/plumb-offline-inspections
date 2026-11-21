@@ -7,12 +7,17 @@ export default function Login({ onLogin, compact = false, email: knownEmail = ""
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function submit(e) {
-    e.preventDefault();
+  // One-click demo accounts, so a reviewer can look around without typing.
+  const DEMOS = [
+    { label: "Supervisor", note: "sees everything", email: "saisathvik@gmail.com", password: "Admin@123" },
+    { label: "Field inspector", note: "Kavya Reddy", email: "kavya.reddy@gmail.com", password: "Field@1234" },
+  ];
+
+  async function signIn(mail, pass) {
     setError("");
     setBusy(true);
     try {
-      await onLogin(await api.login(email, password));
+      await onLogin(await api.login(mail, pass));
     } catch (err) {
       setError(
         err.network
@@ -23,6 +28,11 @@ export default function Login({ onLogin, compact = false, email: knownEmail = ""
       setBusy(false);
     }
   }
+
+  const submit = (e) => {
+    e.preventDefault();
+    return signIn(email, password);
+  };
 
   return (
     <div className={compact ? "login login-compact" : "login"}>
@@ -46,6 +56,19 @@ export default function Login({ onLogin, compact = false, email: knownEmail = ""
         </label>
         {error && <p className="form-error" role="alert">{error}</p>}
         <button className="btn btn-primary btn-block" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+        {!compact && (
+          <div className="demo">
+            <span className="demo-title">Demo accounts, one click</span>
+            <div className="demo-row">
+              {DEMOS.map((d) => (
+                <button key={d.label} type="button" className="demo-btn" disabled={busy} onClick={() => signIn(d.email, d.password)}>
+                  <strong>{d.label}</strong>
+                  <small>{d.note}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );
